@@ -125,7 +125,7 @@ public:
     
     void makeVoxel(glm::vec3 position,
                    float scale,
-                   unsigned char red,
+                   unsigned char red, 
                    unsigned char green,
                    unsigned char blue,
                    bool isDestructive);
