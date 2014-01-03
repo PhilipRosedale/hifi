@@ -444,8 +444,6 @@ void Hand::handleVoxelCollision(PalmData* palm, const glm::vec3& fingerTipPositi
     AudioInjectorOptions injectorOptions;
     injectorOptions.setPosition(fingerTipPosition);
     injectorOptions.setVolume(volume);
-    injectorOptions.setShouldLoopback(true);
-    injectorOptions.setLoopbackAudioInterface(Application::getInstance()->getAudio());
     AudioScriptingInterface::playSound(&_drumSound, &injectorOptions);
 }
 
