@@ -116,6 +116,7 @@ private:
     
     Sound _throwSound;
     Sound _catchSound;
+    Sound _drumSound;
     
 };
 

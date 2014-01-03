@@ -325,7 +325,7 @@ void Avatar::renderBody(bool forceRenderHead) {
         glm::vec3 pos = getPosition();
         //printf("Render other at %.3f, %.2f, %.2f\n", pos.x, pos.y, pos.z);
         _skeletonModel.render(1.0f);
-        _head.render(1.0f, false);
+        _head.render(1.0f);
     }
     _hand.render(false);
 }

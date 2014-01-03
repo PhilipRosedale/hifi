@@ -40,7 +40,7 @@ public:
     void init();
     void reset();
     void simulate(float deltaTime, bool isMine);
-    void render(float alpha, bool renderAvatarBalls);
+    void render(float alpha);
     void setScale(float scale);
     void setPosition(glm::vec3 position) { _position = position; }
     void setBodyRotation(glm::vec3 bodyRotation) { _bodyRotation = bodyRotation; }
@@ -136,12 +136,6 @@ private:
     static int _eyePositionLocation;
     
     // private methods
-    void renderHeadSphere();
-    void renderEyeBalls();
-    void renderEyeBrows();
-    void renderEars();
-    void renderNose();
-    void renderMouth();
     void renderLookatVectors(glm::vec3 leftEyePosition, glm::vec3 rightEyePosition, glm::vec3 lookatPosition);
     void calculateGeometry();
 

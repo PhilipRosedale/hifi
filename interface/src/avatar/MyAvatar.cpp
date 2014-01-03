@@ -565,7 +565,7 @@ void MyAvatar::renderBody(bool forceRenderHead) {
     } else {
         //  Render the body's voxels and head
         _skeletonModel.render(1.0f);
-        _head.render(1.0f, false);
+        _head.render(1.0f);
     }
     _hand.render(true);
 }

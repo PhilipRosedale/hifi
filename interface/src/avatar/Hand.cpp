@@ -57,7 +57,8 @@ Hand::Hand(Avatar* owningAvatar) :
     _grabStartRotation(0, 0, 0, 1),
     _grabCurrentRotation(0, 0, 0, 1),
     _throwSound(QUrl("https://dl.dropboxusercontent.com/u/1864924/hifi-sounds/throw.raw")),
-    _catchSound(QUrl("https://dl.dropboxusercontent.com/u/1864924/hifi-sounds/catch.raw"))
+    _catchSound(QUrl("https://dl.dropboxusercontent.com/u/1864924/hifi-sounds/catch.raw")),
+    _drumSound(QUrl("https://dl.dropboxusercontent.com/u/1864924/hifi-sounds/catch.raw"))
 {
     for (int i = 0; i < MAX_HANDS; i++) {
         _toyBallInHand[i] = false;
@@ -433,23 +434,22 @@ void Hand::updateCollisions() {
 }
 
 void Hand::handleVoxelCollision(PalmData* palm, const glm::vec3& fingerTipPosition, VoxelTreeElement* voxel, float deltaTime) {
-    //  Collision between finger and a voxel plays sound
-    const float LOWEST_FREQUENCY = 100.f;
-    const float HERTZ_PER_RGB = 3.f;
-    const float DECAY_PER_SAMPLE = 0.0005f;
-    const float DURATION_MAX = 2.0f;
+    
+    //  Collision between finger and a voxel plays sound and makes a little radiating red sphere
     const float MIN_VOLUME = 0.1f;
     float volume = MIN_VOLUME + glm::clamp(glm::length(palm->getRawVelocity()), 0.f, (1.f - MIN_VOLUME));
-    float duration = volume;
+    
     _collisionCenter = fingerTipPosition;
     _collisionAge = deltaTime;
-    _collisionDuration = duration;
-    int voxelBrightness = voxel->getColor()[0] + voxel->getColor()[1] + voxel->getColor()[2];
-    float frequency = LOWEST_FREQUENCY + (voxelBrightness * HERTZ_PER_RGB);
-    Application::getInstance()->getAudio()->startDrumSound(volume,
-                                                           frequency,
-                                                           DURATION_MAX,
-                                                           DECAY_PER_SAMPLE);
+    _collisionDuration = volume;
+
+    AudioInjectorOptions injectorOptions;
+    injectorOptions.position = fingerTipPosition;
+    injectorOptions.volume = volume;
+    injectorOptions.shouldLoopback = false;
+    injectorOptions.loopbackAudioInterface = Application::getInstance()->getAudio();
+    AudioInjector::threadSound(&_drumSound, injectorOptions);
+
 }
 
 void Hand::calculateGeometry() {
