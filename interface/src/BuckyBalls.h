@@ -2,8 +2,8 @@
 //  BuckyBalls.h
 //  hifi
 //
-//  Created by Philip on 1/2/14.
-//
+//  Created by Philip Rosedale on 1/2/14.
+//  Copyright (c) 2013 High Fidelity, Inc. All rights reserved.
 //
 
 #ifndef __hifi__BuckyBalls__

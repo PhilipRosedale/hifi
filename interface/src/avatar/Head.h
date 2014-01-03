@@ -116,7 +116,6 @@ private:
     glm::vec3 _bodyRotation;
     glm::vec3 _angularVelocity;
     bool _renderLookatVectors;
-    //BendyLine _hairTuft[NUM_HAIR_TUFTS];
     glm::vec3 _saccade;
     glm::vec3 _saccadeTarget;
     float _leftEyeBlinkVelocity;
