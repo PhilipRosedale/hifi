@@ -58,7 +58,7 @@ Hand::Hand(Avatar* owningAvatar) :
     _grabCurrentRotation(0, 0, 0, 1),
     _throwSound(QUrl("https://dl.dropboxusercontent.com/u/1864924/hifi-sounds/throw.raw")),
     _catchSound(QUrl("https://dl.dropboxusercontent.com/u/1864924/hifi-sounds/catch.raw")),
-    _drumSound(QUrl("https://dl.dropboxusercontent.com/u/1864924/hifi-sounds/catch.raw"))
+    _drumSound(QUrl("https://s3-us-west-1.amazonaws.com/highfidelity-public/sounds/clap1.raw"))
 {
     for (int i = 0; i < MAX_HANDS; i++) {
         _toyBallInHand[i] = false;
