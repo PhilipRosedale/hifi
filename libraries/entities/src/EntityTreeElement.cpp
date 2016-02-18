@@ -925,6 +925,9 @@ int EntityTreeElement::readElementDataFromBuffer(const unsigned char* data, int 
                     QString entityScriptAfter = entityItem->getScript();
                     quint64 entityScriptTimestampAfter = entityItem->getScriptTimestamp();
                     bool reload = entityScriptTimestampBefore != entityScriptTimestampAfter;
+
+                    // If the script value has changed on us, or it's timestamp has changed to force
+                    // a reload then we want to send out a script changing signal...
                     if (entityScriptBefore != entityScriptAfter || reload) {
                         _myTree->emitEntityScriptChanging(entityItemID, reload); // the entity script has changed
                     }

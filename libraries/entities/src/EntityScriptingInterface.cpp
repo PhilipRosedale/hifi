@@ -129,10 +129,7 @@ QUuid EntityScriptingInterface::addEntity(const EntityItemProperties& properties
     float energyCost = calculateAddCost(properties);
     if(energyCost > _currentAvatarEnergy) {
         return QUuid();
-    } else {
-        //debit the avatar energy and continue
-        emit debitEnergySource(energyCost);
-    }
+    } 
 
     EntityItemID id = EntityItemID(QUuid::createUuid());
 
@@ -167,6 +164,7 @@ QUuid EntityScriptingInterface::addEntity(const EntityItemProperties& properties
 
     // queue the packet
     if (success) {
+        emit debitEnergySource(energyCost);
         queueEntityMessage(PacketType::EntityAdd, id, propertiesWithSimID);
     }
 
@@ -253,7 +251,6 @@ QUuid EntityScriptingInterface::editEntity(QUuid id, const EntityItemProperties&
             if (!entity) {
                 return;
             }
-            
             if (!scriptSideProperties.parentIDChanged()) {
                 properties.setParentID(entity->getParentID());
             }
@@ -267,7 +264,6 @@ QUuid EntityScriptingInterface::editEntity(QUuid id, const EntityItemProperties&
                 properties.setRotation(entity->getOrientation());
             }
         }
-
         float energyCost = calculateEditCost(entity->getProperties(), properties);
         if(energyCost < _currentAvatarEnergy) {
             // energy is OK, do the edit
@@ -353,6 +349,7 @@ void EntityScriptingInterface::deleteEntity(QUuid id) {
             if (entity && !entity->getLocked()) {
                 float energyCost = calculateDeleteCost(entity->getProperties());
                 if (energyCost < _currentAvatarEnergy) {
+
                     _entityTree->deleteEntity(entityID);
                     emit debitEnergySource(energyCost);
                 } else {
