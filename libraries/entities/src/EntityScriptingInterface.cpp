@@ -126,18 +126,12 @@ QUuid EntityScriptingInterface::addEntity(const EntityItemProperties& properties
     EntityItemProperties propertiesWithSimID = convertLocationFromScriptSemantics(properties);
     propertiesWithSimID.setDimensionsInitialized(properties.dimensionsChanged());
 
-    auto dimensions = propertiesWithSimID.getDimensions();
-    float volume = dimensions.x * dimensions.y * dimensions.z;
-    auto density = propertiesWithSimID.getDensity();
-    auto newVelocity = propertiesWithSimID.getVelocity().length();
-    float cost = calculateCost(density * volume, 0, newVelocity);
-    cost *= costMultiplier;
-
-    if(cost > _currentAvatarEnergy) {
+    float energyCost = calculateAddCost(properties);
+    if(energyCost > _currentAvatarEnergy) {
         return QUuid();
     } else {
         //debit the avatar energy and continue
-        emit debitEnergySource(cost);
+        emit debitEnergySource(energyCost);
     }
 
     EntityItemID id = EntityItemID(QUuid::createUuid());
@@ -232,32 +226,24 @@ EntityItemProperties EntityScriptingInterface::getEntityProperties(QUuid identit
 
 QUuid EntityScriptingInterface::editEntity(QUuid id, const EntityItemProperties& scriptSideProperties) {
     EntityItemProperties properties = scriptSideProperties;
-    
-    auto dimensions = properties.getDimensions();
-    float volume = dimensions.x * dimensions.y * dimensions.z;
-    auto density = properties.getDensity();
-    auto newVelocity = properties.getVelocity().length();
-    float oldVelocity = { 0.0f };
-
     EntityItemID entityID(id);
+    EntityItemPointer entity = _entityTree->findEntityByEntityItemID(entityID);
+    
     if (!_entityTree) {
-        queueEntityMessage(PacketType::EntityEdit, entityID, properties);
-        
-        //if there is no local entity entity tree, no existing velocity, use 0.
-        float cost = calculateCost(density * volume, oldVelocity, newVelocity);
-        cost *= costMultiplier;
-        
-        if(cost > _currentAvatarEnergy) {
+        //if there is no local entity to be found to compare, compute energy as if new
+        float energyCost = calculateAddCost(scriptSideProperties);
+        if(energyCost > _currentAvatarEnergy) {
+            // Too expensive, don't make the edit
             return QUuid();
         } else {
-            //debit the avatar energy and continue
-            emit debitEnergySource(cost);
+            // make the edit by sending the message to the server
+            queueEntityMessage(PacketType::EntityEdit, entityID, properties);
+            emit debitEnergySource(energyCost);
+            return id;
         }
-        
-        return id;
     }
-    // If we have a local entity tree set, then also update it.
 
+    // If we have a local entity tree set, then also update it.
     bool updatedEntity = false;
     _entityTree->withWriteLock([&] {
         if (scriptSideProperties.parentRelatedPropertyChanged()) {
@@ -267,8 +253,6 @@ QUuid EntityScriptingInterface::editEntity(QUuid id, const EntityItemProperties&
             if (!entity) {
                 return;
             }
-            //existing entity, retrieve old velocity for check down below
-            oldVelocity = entity->getVelocity().length();            
             
             if (!scriptSideProperties.parentIDChanged()) {
                 properties.setParentID(entity->getParentID());
@@ -283,17 +267,13 @@ QUuid EntityScriptingInterface::editEntity(QUuid id, const EntityItemProperties&
                 properties.setRotation(entity->getOrientation());
             }
         }
-        properties = convertLocationFromScriptSemantics(properties);
-        updatedEntity = _entityTree->updateEntity(entityID, properties);
 
-        float cost = calculateCost(density * volume, oldVelocity, newVelocity);
-        cost *= costMultiplier;
-        
-        if(cost > _currentAvatarEnergy) {
-            updatedEntity = false;
-        } else {
-            //debit the avatar energy and continue
-            emit debitEnergySource(cost);
+        float energyCost = calculateEditCost(entity->getProperties(), properties);
+        if(energyCost < _currentAvatarEnergy) {
+            // energy is OK, do the edit
+            properties = convertLocationFromScriptSemantics(properties);
+            updatedEntity = _entityTree->updateEntity(entityID, properties);
+            emit debitEnergySource(energyCost);
         }
     });
 
@@ -357,6 +337,7 @@ QUuid EntityScriptingInterface::editEntity(QUuid id, const EntityItemProperties&
             });
         }
     });
+    // finally, send the edit message to the server 
     queueEntityMessage(PacketType::EntityEdit, entityID, properties);
     return id;
 }
@@ -369,26 +350,13 @@ void EntityScriptingInterface::deleteEntity(QUuid id) {
     if (_entityTree) {
         _entityTree->withWriteLock([&] {
             EntityItemPointer entity = _entityTree->findEntityByEntityItemID(entityID);
-            if (entity) {
-                
-                auto dimensions = entity->getDimensions();
-                float volume = dimensions.x * dimensions.y * dimensions.z;
-                auto density = entity->getDensity();
-                auto velocity = entity->getVelocity().length();
-                float cost = calculateCost(density * volume, velocity, 0);
-                cost *= costMultiplier;
-                
-                if(cost > _currentAvatarEnergy) {
-                    return;
-                } else {
-                    //debit the avatar energy and continue
-                    emit debitEnergySource(cost);
-                }
-
-                if (entity->getLocked()) {
-                    shouldDelete = false;
-                } else {
+            if (entity && !entity->getLocked()) {
+                float energyCost = calculateDeleteCost(entity->getProperties());
+                if (energyCost < _currentAvatarEnergy) {
                     _entityTree->deleteEntity(entityID);
+                    emit debitEnergySource(energyCost);
+                } else {
+                    shouldDelete = false; 
                 }
             }
         });
@@ -1062,9 +1030,26 @@ QStringList EntityScriptingInterface::getJointNames(const QUuid& entityID) {
     return result;
 }
 
-float EntityScriptingInterface::calculateCost(float mass, float oldVelocity, float newVelocity) {
-    return std::abs(mass * (newVelocity - oldVelocity));
+const float RESTING_ENERGY_VELOCITY = 0.f;
+
+float EntityScriptingInterface::calculateEditCost(const EntityItemProperties& oldProperties, const EntityItemProperties& newProperties) {
+    return 0.f; // std::abs(mass * (newVelocity - oldVelocity));
 }
+
+float EntityScriptingInterface::calculateAddCost(const EntityItemProperties& newProperties) {
+    auto dimensions = newProperties.getDimensions();
+    float volume = dimensions.x * dimensions.y * dimensions.z;
+    auto density = newProperties.getDensity();
+    auto velocity = newProperties.getVelocity().length();
+    // Todo:  add costs multiplier
+    float cost = density * volume * (RESTING_ENERGY_VELOCITY + velocity);
+    return cost;
+}
+
+float EntityScriptingInterface::calculateDeleteCost(const EntityItemProperties& oldProperties) {
+    return 0.f; // std::abs(mass * (newVelocity - oldVelocity));
+}
+
 
 void EntityScriptingInterface::setCurrentAvatarEnergy(float energy) {
   //  qCDebug(entities) << "NEW AVATAR ENERGY IN ENTITY SCRIPTING INTERFACE: " << energy;

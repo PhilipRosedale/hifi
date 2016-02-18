@@ -72,7 +72,9 @@ public:
     void setEntityTree(EntityTreePointer modelTree);
     EntityTreePointer getEntityTree() { return _entityTree; }
     void setEntitiesScriptEngine(EntitiesScriptEngineProvider* engine) { _entitiesScriptEngine = engine; }
-    float calculateCost(float mass, float oldVelocity, float newVelocity);
+    float calculateEditCost(const EntityItemProperties& oldProperties, const EntityItemProperties& newProperties);
+    float calculateAddCost(const EntityItemProperties& newProperties);
+    float calculateDeleteCost(const EntityItemProperties& oldProperties);
 public slots:
 
     // returns true if the DomainServer will allow this Node/Avatar to make changes
