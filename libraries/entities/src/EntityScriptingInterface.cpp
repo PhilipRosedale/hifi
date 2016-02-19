@@ -244,29 +244,31 @@ QUuid EntityScriptingInterface::editEntity(QUuid id, const EntityItemProperties&
     // If we have a local entity tree set, then also update it.
     bool updatedEntity = false;
     _entityTree->withWriteLock([&] {
-        if (scriptSideProperties.parentRelatedPropertyChanged()) {
-            // All of parentID, parentJointIndex, position, rotation are needed to make sense of any of them.
-            // If any of these changed, pull any missing properties from the entity.
-            EntityItemPointer entity = _entityTree->findEntityByEntityItemID(entityID);
-            if (!entity) {
-                return;
-            }
-            if (!scriptSideProperties.parentIDChanged()) {
-                properties.setParentID(entity->getParentID());
-            }
-            if (!scriptSideProperties.parentJointIndexChanged()) {
-                properties.setParentJointIndex(entity->getParentJointIndex());
-            }
-            if (!scriptSideProperties.localPositionChanged() && !scriptSideProperties.positionChanged()) {
-                properties.setPosition(entity->getPosition());
-            }
-            if (!scriptSideProperties.localRotationChanged() && !scriptSideProperties.rotationChanged()) {
-                properties.setRotation(entity->getOrientation());
-            }
+        EntityItemPointer entity = _entityTree->findEntityByEntityItemID(entityID);
+        if (!entity) {
+            return;
         }
+
         float energyCost = calculateEditCost(entity->getProperties(), properties);
         if(energyCost < _currentAvatarEnergy) {
             // energy is OK, do the edit
+            if (scriptSideProperties.parentRelatedPropertyChanged()) {
+                // All of parentID, parentJointIndex, position, rotation are needed to make sense of any of them.
+                // If any of these changed, pull any missing properties from the entity.
+
+                if (!scriptSideProperties.parentIDChanged()) {
+                    properties.setParentID(entity->getParentID());
+                }
+                if (!scriptSideProperties.parentJointIndexChanged()) {
+                    properties.setParentJointIndex(entity->getParentJointIndex());
+                }
+                if (!scriptSideProperties.localPositionChanged() && !scriptSideProperties.positionChanged()) {
+                    properties.setPosition(entity->getPosition());
+                }
+                if (!scriptSideProperties.localRotationChanged() && !scriptSideProperties.rotationChanged()) {
+                    properties.setRotation(entity->getOrientation());
+                }
+            }
             properties = convertLocationFromScriptSemantics(properties);
             updatedEntity = _entityTree->updateEntity(entityID, properties);
             emit debitEnergySource(energyCost);
