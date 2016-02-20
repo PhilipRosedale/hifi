@@ -59,7 +59,7 @@ function debitAvatarEnergy(value) {
     MyAvatar.energy = MyAvatar.energy - value;
 }
 
-Entities.setEnergyCostMultiplier(10.0);
+Entities.setEnergyCostMultiplier(1.0);
 print("Energy-mass multiplier = " + Entities.getEnergyCostMultiplier);
 Entities.debitEnergySource.connect(debitAvatarEnergy);
 MyAvatar.energyChanged.connect(energyChanged);
