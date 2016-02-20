@@ -424,13 +424,13 @@ private:
     glm::vec3 _hoverReferenceCameraFacing; // hmd sensor space
     
     float AVATAR_MOVEMENT_ENERGY_CONSTANT { 0.001f };
-    float AUDIO_ENERGY_CONSTANT { 0.000001f };
+    float AUDIO_ENERGY_CONSTANT { 0.0000625f };
     float MAX_AVATAR_MOVEMENT_PER_FRAME { 30.0f };
-    float currentEnergy { 0.0f };
-    float energyChargeRate { 0.003f };
-    glm::vec3 priorVelocity;
-    glm::vec3 lastPosition;
-    float getAudioEnergy();
+    float AVATAR_ENERGY_CHARGE_RATE = { 0.1875f };
+    float _currentEnergy{ 0.0f };
+    glm::vec3 _lastVelocity;
+    glm::vec3 _lastPosition;
+    float getAudioEnergy(float deltaTime);
     float getAccelerationEnergy();
     float getEnergy();
     void setEnergy(float value);

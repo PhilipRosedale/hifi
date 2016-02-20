@@ -1029,36 +1029,45 @@ QStringList EntityScriptingInterface::getJointNames(const QUuid& entityID) {
     return result;
 }
 
-const float RESTING_ENERGY_VELOCITY = 0.f;
+const float MINIMUM_ENERGY_EDIT_COST = 0.001f;
+const float MINIMUM_ENERGY_ADD_COST = 0.01f;
+const float MINIMUM_ENERGY_DELETE_COST = 0.005f;
+
+float EntityScriptingInterface::calculateMass(const EntityItemProperties& properties) {
+    auto dimensions = properties.getDimensions();
+    return dimensions.x * dimensions.y * dimensions.z * properties.getDensity();
+}
 
 float EntityScriptingInterface::calculateEditCost(const EntityItemProperties& oldProperties, const EntityItemProperties& newProperties) {
-    return 0.f; // std::abs(mass * (newVelocity - oldVelocity));
+    float cost = MINIMUM_ENERGY_EDIT_COST;
+    float deltaVelocity = glm::distance(newProperties.getVelocity(), oldProperties.getVelocity());
+    float mass = calculateMass(newProperties);
+    cost *= _energyCostMultiplier;
+    return  cost;
 }
 
 float EntityScriptingInterface::calculateAddCost(const EntityItemProperties& newProperties) {
-    auto dimensions = newProperties.getDimensions();
-    float volume = dimensions.x * dimensions.y * dimensions.z;
-    auto density = newProperties.getDensity();
-    auto velocity = newProperties.getVelocity().length();
-    // Todo:  add costs multiplier
-    float cost = density * volume * (RESTING_ENERGY_VELOCITY + velocity);
+    float deltaVelocity = glm::length(newProperties.getVelocity());
+    float cost = MINIMUM_ENERGY_ADD_COST;
+    cost *= _energyCostMultiplier;
     return cost;
 }
 
 float EntityScriptingInterface::calculateDeleteCost(const EntityItemProperties& oldProperties) {
-    return 0.f; // std::abs(mass * (newVelocity - oldVelocity));
+    float deltaVelocity = glm::length(oldProperties.getVelocity());
+    float cost = MINIMUM_ENERGY_DELETE_COST;
+    cost *= _energyCostMultiplier;
+    return cost;
 }
 
-
 void EntityScriptingInterface::setCurrentAvatarEnergy(float energy) {
-  //  qCDebug(entities) << "NEW AVATAR ENERGY IN ENTITY SCRIPTING INTERFACE: " << energy;
     _currentAvatarEnergy = energy;
 }
 
-float EntityScriptingInterface::getCostMultiplier() {
-    return costMultiplier;
+float EntityScriptingInterface::getEnergyCostMultiplier() {
+    return _energyCostMultiplier;
 }
 
-void EntityScriptingInterface::setCostMultiplier(float value) {
-    costMultiplier = value;
+void EntityScriptingInterface::setEnergyCostMultiplier(float value) {
+    _energyCostMultiplier = value;
 }

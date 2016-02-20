@@ -61,7 +61,7 @@ class EntityScriptingInterface : public OctreeScriptingInterface, public Depende
     Q_OBJECT
     
     Q_PROPERTY(float currentAvatarEnergy READ getCurrentAvatarEnergy WRITE setCurrentAvatarEnergy)
-    Q_PROPERTY(float costMultiplier READ getCostMultiplier WRITE setCostMultiplier)
+    Q_PROPERTY(float energyCostMultipler READ getEnergyCostMultiplier WRITE setEnergyCostMultiplier)
 public:
     EntityScriptingInterface(bool bidOnSimulationOwnership);
 
@@ -75,6 +75,7 @@ public:
     float calculateEditCost(const EntityItemProperties& oldProperties, const EntityItemProperties& newProperties);
     float calculateAddCost(const EntityItemProperties& newProperties);
     float calculateDeleteCost(const EntityItemProperties& oldProperties);
+    float calculateMass(const EntityItemProperties& properties);
 public slots:
 
     // returns true if the DomainServer will allow this Node/Avatar to make changes
@@ -170,6 +171,9 @@ public slots:
 
     Q_INVOKABLE int getJointIndex(const QUuid& entityID, const QString& name);
     Q_INVOKABLE QStringList getJointNames(const QUuid& entityID);
+
+    Q_INVOKABLE float getEnergyCostMultiplier();
+    Q_INVOKABLE void setEnergyCostMultiplier(float value);
     
 
 signals:
@@ -208,7 +212,6 @@ private:
                                                      EntityTypes::EntityType entityType = EntityTypes::Unknown);
 
 
-    /// actually does the work of finding the ray intersection, can be called in locking mode or tryLock mode
     RayToEntityIntersectionResult findRayIntersectionWorker(const PickRay& ray, Octree::lockType lockType,
         bool precisionPicking, const QVector<EntityItemID>& entityIdsToInclude, const QVector<EntityItemID>& entityIdsToDiscard);
 
@@ -220,9 +223,8 @@ private:
     float getCurrentAvatarEnergy() { return _currentAvatarEnergy; }
     void setCurrentAvatarEnergy(float energy);
     
-    float costMultiplier = { 0.01f };
-    float getCostMultiplier();
-    void setCostMultiplier(float value);
+    float _energyCostMultiplier = { 0.0f };
+
 };
 
 #endif // hifi_EntityScriptingInterface_h

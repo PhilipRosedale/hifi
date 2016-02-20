@@ -301,15 +301,15 @@ void MyAvatar::update(float deltaTime) {
     
      simulate(deltaTime);
     
-    currentEnergy += energyChargeRate;
-    currentEnergy -= getAccelerationEnergy();
-    currentEnergy -= getAudioEnergy();
-    
+    _currentEnergy += AVATAR_ENERGY_CHARGE_RATE * deltaTime;
+    _currentEnergy -= getAccelerationEnergy();
+    _currentEnergy -= getAudioEnergy(deltaTime);
+
     if(didTeleport()) {
-        currentEnergy = 0.0f;
+        _currentEnergy = 0.0f;
     }
-    currentEnergy = max(0.0f, min(currentEnergy,1.0f));
-    emit energyChanged(currentEnergy);
+    _currentEnergy = max(0.0f, min(_currentEnergy,1.0f));
+    emit energyChanged(_currentEnergy);
      
    
 }
@@ -1918,30 +1918,29 @@ glm::mat4 MyAvatar::FollowHelper::postPhysicsUpdate(const MyAvatar& myAvatar, co
 }
 
 float MyAvatar::getAccelerationEnergy() {
-    glm::vec3 velocity = getVelocity();
-    int changeInVelocity = abs(velocity.length() - priorVelocity.length());
-    float changeInEnergy = priorVelocity.length() * changeInVelocity * AVATAR_MOVEMENT_ENERGY_CONSTANT;
-    priorVelocity = velocity;
-    
+    glm::vec3 currentVelocity = getVelocity();
+    float dv = glm::distance(currentVelocity, _lastVelocity);
+    float changeInEnergy = glm::length(currentVelocity) * dv * AVATAR_MOVEMENT_ENERGY_CONSTANT;
+    _lastVelocity = currentVelocity;
     return changeInEnergy;
 }
 
 float MyAvatar::getEnergy() {
-    return currentEnergy;
+    return _currentEnergy;
 }
 
 void MyAvatar::setEnergy(float value) {
-    currentEnergy = value;
+    _currentEnergy = value;
 }
 
-float MyAvatar::getAudioEnergy() {
-    return getAudioLoudness() * AUDIO_ENERGY_CONSTANT;
+float MyAvatar::getAudioEnergy(float deltaTime) {
+    return getAudioLoudness() * AUDIO_ENERGY_CONSTANT * deltaTime;
 }
 
 bool MyAvatar::didTeleport() {
-    glm::vec3 pos = getPosition();
-    glm::vec3 changeInPosition = pos - lastPosition;
-    lastPosition = pos;
-    return (changeInPosition.length() > MAX_AVATAR_MOVEMENT_PER_FRAME);
+    glm::vec3 currentPosition = getPosition();
+    float deltaPosition = glm::distance(currentPosition, _lastPosition);
+    _lastPosition = currentPosition;
+    return (deltaPosition > MAX_AVATAR_MOVEMENT_PER_FRAME);
 }
 
