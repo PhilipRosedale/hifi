@@ -423,10 +423,11 @@ private:
     bool _hoverReferenceCameraFacingIsCaptured { false };
     glm::vec3 _hoverReferenceCameraFacing { 0.0f, 0.0f, -1.0f }; // hmd sensor space
 
+    // Constants regulating energy system
     float AVATAR_MOVEMENT_ENERGY_CONSTANT { 0.001f };
     float AUDIO_ENERGY_CONSTANT { 0.0000625f };
     float MAX_AVATAR_MOVEMENT_PER_FRAME { 30.0f };
-    float AVATAR_ENERGY_CHARGE_RATE = { 0.1875f };
+    float AVATAR_ENERGY_CHARGE_RATE { 0.1875f };
     float _currentEnergy{ 0.0f };
     glm::vec3 _lastVelocity;
     glm::vec3 _lastPosition;

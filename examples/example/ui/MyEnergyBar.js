@@ -57,7 +57,6 @@ function energyChanged(newValue) {
 
 function debitAvatarEnergy(value) {
     MyAvatar.energy = MyAvatar.energy - value;
-    print("received debit energy of " + value + ", E = " + MyAvatar.energy);
 }
 
 Entities.setEnergyCostMultiplier(10.0);

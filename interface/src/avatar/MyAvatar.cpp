@@ -308,7 +308,7 @@ void MyAvatar::update(float deltaTime) {
     if(didTeleport()) {
         _currentEnergy = 0.0f;
     }
-    _currentEnergy = max(0.0f, min(_currentEnergy,1.0f));
+    _currentEnergy = max(0.0f, min(_currentEnergy, 1.0f));
     emit energyChanged(_currentEnergy);
      
    
