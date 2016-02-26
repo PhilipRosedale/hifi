@@ -1040,21 +1040,17 @@ float EntityScriptingInterface::calculateMass(const EntityItemProperties& proper
 
 float EntityScriptingInterface::calculateEditCost(const EntityItemProperties& oldProperties, const EntityItemProperties& newProperties) {
     float cost = MINIMUM_ENERGY_EDIT_COST;
-    float deltaVelocity = glm::distance(newProperties.getVelocity(), oldProperties.getVelocity());
-    float mass = calculateMass(newProperties);
     cost *= _energyCostMultiplier;
     return  cost;
 }
 
 float EntityScriptingInterface::calculateAddCost(const EntityItemProperties& newProperties) {
-    float deltaVelocity = glm::length(newProperties.getVelocity());
     float cost = MINIMUM_ENERGY_ADD_COST;
     cost *= _energyCostMultiplier;
     return cost;
 }
 
 float EntityScriptingInterface::calculateDeleteCost(const EntityItemProperties& oldProperties) {
-    float deltaVelocity = glm::length(oldProperties.getVelocity());
     float cost = MINIMUM_ENERGY_DELETE_COST;
     cost *= _energyCostMultiplier;
     return cost;
