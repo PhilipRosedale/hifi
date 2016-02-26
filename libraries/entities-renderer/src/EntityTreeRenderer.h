@@ -74,9 +74,9 @@ public:
     void deleteReleasedModels();
     
     // event handles which may generate entity related events
-    void mouseReleaseEvent(QMouseEvent* event, unsigned int deviceID);
-    void mousePressEvent(QMouseEvent* event, unsigned int deviceID);
-    void mouseMoveEvent(QMouseEvent* event, unsigned int deviceID);
+    void mouseReleaseEvent(QMouseEvent* event);
+    void mousePressEvent(QMouseEvent* event);
+    void mouseMoveEvent(QMouseEvent* event);
 
     /// connect our signals to anEntityScriptingInterface for firing of events related clicking,
     /// hovering over, and entering entities
@@ -86,10 +86,10 @@ public:
     QList<EntityItemID>& getEntitiesLastInScene() { return _entityIDsLastInScene; }
 
 signals:
-    void mousePressOnEntity(const RayToEntityIntersectionResult& intersection, const QMouseEvent* event, unsigned int deviceId);
-    void mousePressOffEntity(const RayToEntityIntersectionResult& intersection, const QMouseEvent* event, unsigned int deviceId);
-    void mouseMoveOnEntity(const RayToEntityIntersectionResult& intersection, const QMouseEvent* event, unsigned int deviceId);
-    void mouseReleaseOnEntity(const RayToEntityIntersectionResult& intersection, const QMouseEvent* event, unsigned int deviceId);
+    void mousePressOnEntity(const RayToEntityIntersectionResult& intersection, const QMouseEvent* event);
+    void mousePressOffEntity(const RayToEntityIntersectionResult& intersection, const QMouseEvent* event);
+    void mouseMoveOnEntity(const RayToEntityIntersectionResult& intersection, const QMouseEvent* event);
+    void mouseReleaseOnEntity(const RayToEntityIntersectionResult& intersection, const QMouseEvent* event);
 
     void clickDownOnEntity(const EntityItemID& entityItemID, const MouseEvent& event);
     void holdingClickOnEntity(const EntityItemID& entityItemID, const MouseEvent& event);
@@ -109,6 +109,7 @@ public slots:
     void entitySciptChanging(const EntityItemID& entityID, const bool reload);
     void entityCollisionWithEntity(const EntityItemID& idA, const EntityItemID& idB, const Collision& collision);
     void updateEntityRenderStatus(bool shouldRenderEntities);
+    void updateZone(const EntityItemID& id);
 
     // optional slots that can be wired to menu items
     void setDisplayModelBounds(bool value) { _displayModelBounds = value; }
@@ -136,15 +137,18 @@ private:
     EntityItemID _currentClickingOnEntityID;
 
     QScriptValueList createEntityArgs(const EntityItemID& entityID);
-    void checkEnterLeaveEntities();
+    bool checkEnterLeaveEntities();
     void leaveAllEntities();
     void forceRecheckEntities();
 
-    glm::vec3 _lastAvatarPosition;
+    glm::vec3 _lastAvatarPosition { 0.0f };
     QVector<EntityItemID> _currentEntitiesInside;
 
     bool _pendingSkyboxTexture { false };
     NetworkTexturePointer _skyboxTexture;
+
+    bool _pendingAmbientTexture { false };
+    NetworkTexturePointer _ambientTexture;
 
     bool _wantScripts;
     ScriptEngine* _entitiesScriptEngine;

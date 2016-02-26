@@ -42,6 +42,7 @@ public:
     QAction* newAction() {
         return new QAction(_realMenu);
     }
+
 private:
     MenuWrapper(QMenu* menu);
 
@@ -117,6 +118,8 @@ public slots:
     void toggleDeveloperMenus();
     void toggleAdvancedMenus();
 
+    static bool isSomeSubmenuShown() { return _isSomeSubmenuShown; }
+
 private:
     typedef void(*settingsAction)(Settings&, QAction&);
     static void loadAction(Settings& settings, QAction& action);
@@ -142,6 +145,8 @@ private:
     bool isValidGrouping(const QString& grouping) const { return grouping == "Advanced" || grouping == "Developer"; }
     QHash<QString, bool> _groupingVisible;
     QHash<QString, QSet<QAction*>> _groupingActions;
+
+    static bool _isSomeSubmenuShown;
 };
 
 namespace MenuOption {
@@ -242,6 +247,7 @@ namespace MenuOption {
     const QString OnePointCalibration = "1 Point Calibration";
     const QString OnlyDisplayTopTen = "Only Display Top Ten";
     const QString OutputMenu = "Display";
+    const QString Overlays = "Overlays";
     const QString PackageModel = "Package Model...";
     const QString Pair = "Pair";
     const QString PhysicsShowHulls = "Draw Collision Hulls";
@@ -261,18 +267,6 @@ namespace MenuOption {
     const QString RenderResolutionHalf = "1/2";
     const QString RenderResolutionThird = "1/3";
     const QString RenderResolutionQuarter = "1/4";
-    const QString RenderAmbientLight = "Ambient Light";
-    const QString RenderAmbientLightGlobal = "Global";
-    const QString RenderAmbientLight0 = "OLD_TOWN_SQUARE";
-    const QString RenderAmbientLight1 = "GRACE_CATHEDRAL";
-    const QString RenderAmbientLight2 = "EUCALYPTUS_GROVE";
-    const QString RenderAmbientLight3 = "ST_PETERS_BASILICA";
-    const QString RenderAmbientLight4 = "UFFIZI_GALLERY";
-    const QString RenderAmbientLight5 = "GALILEOS_TOMB";
-    const QString RenderAmbientLight6 = "VINE_STREET_KITCHEN";
-    const QString RenderAmbientLight7 = "BREEZEWAY";
-    const QString RenderAmbientLight8 = "CAMPUS_SUNSET";
-    const QString RenderAmbientLight9 = "FUNSTON_BEACH_SUNSET";
     const QString ResetAvatarSize = "Reset Avatar Size";
     const QString ResetSensors = "Reset Sensors";
     const QString RunningScripts = "Running Scripts...";

@@ -43,7 +43,7 @@ Model::Model(RigPointer rig, QObject* parent) :
     _rotation(),
     _scale(1.0f, 1.0f, 1.0f),
     _scaleToFit(false),
-    _scaleToFitDimensions(0.0f),
+    _scaleToFitDimensions(1.0f),
     _scaledToFit(false),
     _snapModelToRegistrationPoint(false),
     _snappedToRegistrationPoint(false),
@@ -92,15 +92,15 @@ void Model::setScale(const glm::vec3& scale) {
     _scaledToFit = false;
 }
 
-const float METERS_PER_MILLIMETER = 0.01f; 
+const float SCALE_CHANGE_EPSILON = 0.01f;
 
 void Model::setScaleInternal(const glm::vec3& scale) {
-    if (glm::distance(_scale, scale) > METERS_PER_MILLIMETER) {
+    if (glm::distance(_scale, scale) > SCALE_CHANGE_EPSILON) {
         _scale = scale;
         if (_scale.x == 0.0f || _scale.y == 0.0f || _scale.z == 0.0f) {
             assert(false);
         }
-        initJointTransforms();
+        simulate(0.0f, true);
     }
 }
 
@@ -907,6 +907,14 @@ void Model::setScaleToFit(bool scaleToFit, float largestDimension, bool forceRes
             _scaledToFit = false; // force rescaling
         }
     }
+}
+
+glm::vec3 Model::getScaleToFitDimensions() const {
+    if (_scaleToFitDimensions.y == FAKE_DIMENSION_PLACEHOLDER &&
+        _scaleToFitDimensions.z == FAKE_DIMENSION_PLACEHOLDER) {
+        return glm::vec3(_scaleToFitDimensions.x);
+    }
+    return _scaleToFitDimensions;
 }
 
 void Model::scaleToFit() {
